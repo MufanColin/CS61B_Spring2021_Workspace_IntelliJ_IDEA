@@ -2,16 +2,9 @@
  *  @author YOUR NAME HERE
  */
 public class Collatz {
-
-    /** Buggy implementation of nextNumber! */
+    /** Correct implementation of nextNumber*/
     public static int nextNumber(int n) {
-        if (n  == 128) {
-            return 1;
-        } else if (n == 5) {
-            return 3 * n + 1;
-        } else {
-            return n * 2;
-        }
+        return ((n & 1) == 1) ? 3 * n + 1 : n / 2;
     }
 
     public static void main(String[] args) {
