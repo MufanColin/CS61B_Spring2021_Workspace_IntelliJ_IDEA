@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/CS61B_Spring2021_Workspace_IntelliJ_IDEA.iml" filepath="$PROJECT_DIR$/CS61B_Spring2021_Workspace_IntelliJ_IDEA.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Lecture02_Defining_and_Using_Classes/Lecture02_Defining_and_Using_Classes.iml" filepath="$PROJECT_DIR$/Lecture02_Defining_and_Using_Classes/Lecture02_Defining_and_Using_Classes.iml" />
+    </modules>
+  </component>
+</project>
