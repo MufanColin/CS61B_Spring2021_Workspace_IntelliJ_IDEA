@@ -1,7 +1,9 @@
 package game2048;
 
+import javax.lang.model.type.NullType;
 import java.util.Formatter;
 import java.util.Observable;
+import java.util.PriorityQueue;
 
 
 /** The state of a game of 2048.
@@ -113,12 +115,66 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+        board.setViewingPerspective(side);
+        for (int i = 0; i < board.size(); i++) {
+            if (singleColumn(board, i)) {
+                changed = true;
+            }
+        }
+        board.setViewingPerspective(Side.NORTH);
 
         checkGameOver();
         if (changed) {
             setChanged();
         }
         return changed;
+    }
+
+    /** Return true if there is a change, return false if there is no change at all
+     * hasMergedBefore is a boolean array which tells whether a row has been merged before or not
+     * if hasMergedBefore[i] = true, then it cannot be merged again
+     * if hasMergedBefore[i] = false, then it can be merged with another same value
+     * The outer loop iterates over each row, from top to bottom(row 3 to row 0)
+     * The inner loop iterates over each row above the current row, from top to current row + 1
+     * if there is an empty cell above the current row, then move the current cell to that empty cell directly
+     * if there is a cell with the same value, we need to check if there are any cell in the way(road blocks)
+     * if there are no road blocks, then we can merge two cells
+     * */
+    public boolean singleColumn(Board b, int currentColumn) {
+        boolean changed = false;
+        boolean[] hasMergedBefore = new boolean[b.size()];
+        int n = b.size();
+        for (int i = n - 1; i >= 0; i--) {
+            Tile currentCell = b.tile(currentColumn, i);
+            if (currentCell != null) {
+                for (int j = n - 1; j > i; j--) {
+                    Tile previousCell = b.tile(currentColumn, j);
+                    if (previousCell == null) {
+                        b.move(currentColumn, j, currentCell);
+                        changed = true;
+                        break;
+                    } else {
+                        if (hasMergedBefore[j] == false && previousCell.value() == currentCell.value() && canMerge(b, currentColumn, i, j)) {
+                            hasMergedBefore[j] = true;
+                            score += 2 * currentCell.value();
+                            b.move(currentColumn, j, currentCell);
+                            changed = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return changed;
+    }
+
+    public boolean canMerge(Board b, int currentColumn, int start, int destination) {
+        for (int i = start + 1; i < destination; i++) {
+            if (b.tile(currentColumn, i) != null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Checks if the game is over and sets the gameOver variable
@@ -138,6 +194,14 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
+        // check line 50 and line 65-67 in Board.java file
+        for (int i = 0; i < b.size(); i++) {
+            for (int j = 0; j < b.size(); j++) {
+                if (b.tile(i, j) == null) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -148,6 +212,13 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
+        for (int i = 0; i < b.size(); i++) {
+            for (int j = 0; j < b.size(); j++) {
+                if (b.tile(i,j) != null && b.tile(i, j).value() == MAX_PIECE) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -159,10 +230,41 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
+        if (emptySpaceExists(b)) {
+            return true;
+        } else {
+            for (int i = 0; i < b.size(); i++) {
+                for (int j = 0; j < b.size(); j++) {
+                    if (validPosition(b, i - 1, j) && isSameValue(b, i - 1, j, i, j)) {
+                        return true;
+                    }
+                    if (validPosition(b, i + 1, j) && isSameValue(b, i + 1, j, i, j)) {
+                        return true;
+                    }
+                    if (validPosition(b, i, j - 1) && isSameValue(b, i, j - 1, i, j)) {
+                        return true;
+                    }
+                    if (validPosition(b, i, j + 1) && isSameValue(b, i, j + 1, i, j)) {
+                        return true;
+                    }
+                }
+            }
+        }
         return false;
     }
 
-
+    public static boolean validPosition(Board b, int i, int j) {
+        if (0 <= i && i < b.size() && 0 <= j && j < b.size()) {
+            return true;
+        }
+        return false;
+    }
+    public static boolean isSameValue(Board b, int i1, int j1, int i2, int j2) {
+        if (b.tile(i1, j1).value() == b.tile(i2, j2).value()) {
+            return true;
+        }
+        return false;
+    }
     @Override
      /** Returns the model as a string, used for debugging. */
     public String toString() {
